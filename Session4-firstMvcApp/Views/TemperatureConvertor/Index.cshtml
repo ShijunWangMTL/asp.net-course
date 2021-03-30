@@ -1,0 +1,61 @@
+﻿@using Session4_firstMvcApp.Models @* comment: 1st line for any using, e.g. helper, enum, service, etc. *@
+@model Session4_firstMvcApp.Models.TemperatureConvertor
+@* comment: 2nd line: the model used in this view *@
+
+
+@{
+    ViewBag.Title = "TemperatureConvertor";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Temprature Convertor</h2>
+
+@using (Html.BeginForm())
+{
+    <div class="container">
+        <div class="form-horizontal">
+            <div class="form-group">
+                @Html.LabelFor(model => model.FromUnit, "From", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DropDownList("FromUnit", EnumHelper.GetSelectList(typeof(TemperatureUnit)), "Select a temperature unit", new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.FromUnit, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.ToUnit, "To", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DropDownList("ToUnit", EnumHelper.GetSelectList(typeof(TemperatureUnit)), "Select a temperature unit", new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ToUnit, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Temperature, "To Convert", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Temperature, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Temperature, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Convert" class="btn btn-default" />
+                </div>
+            </div>
+
+            @if (Model != null && Model.Result.HasValue)
+            {
+                <div class="col-md-12">
+                    <h3>Result: The conversion from @Model.FromUnit to @Model.ToUnit is @Model.Result.Value @Model.ResultSymbol.</h3>
+                </div>
+            }
+
+        </div>
+    </div>
+}
+
+@section Scripts{
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
