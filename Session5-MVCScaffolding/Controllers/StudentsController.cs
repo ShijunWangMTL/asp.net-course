@@ -6,7 +6,10 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using AutoMapper;
+using Session5_MVCScaffolding.Helper;
 using Session5_MVCScaffolding.Models;
+using Session5_MVCScaffolding.ViewModels;
 
 namespace Session5_MVCScaffolding.Controllers
 {
@@ -45,17 +48,26 @@ namespace Session5_MVCScaffolding.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Name,EnrollmentDate,Photo")] Student student)
+        [ValidateAntiForgeryToken] // AntiForgery means nobody can steal the session
+        public ActionResult Create([Bind(Include = "Id,Name,EnrollmentDate,Photo")] StudentViewModel studentVM)
         {
             if (ModelState.IsValid)
             {
+                var student = new Student();
+                student.Name = studentVM.Name;
+                student.EnrollmentDate = studentVM.EnrollmentDate;
+                // adding photo to the object
+                if (studentVM.Photo != null)
+                {
+                    student.Photo = ImageConverter.ByteArrayFromPostedFile(studentVM.Photo);
+                }
+
                 db.Students.Add(student);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
-            return View(student);
+            return View(studentVM);
         }
 
         // GET: Students/Edit/5
@@ -70,7 +82,13 @@ namespace Session5_MVCScaffolding.Controllers
             {
                 return HttpNotFound();
             }
-            return View(student);
+
+            //var studentVM = new StudentViewModel(); // not a good solution
+            // AUTOMAPPER
+            Mapper.CreateMap<Student, StudentViewModel>().ForMember(x => x.Photo, opt => opt.Ignore());
+            var studentVM = Mapper.Map<StudentViewModel>(student);
+            studentVM.PhotoDb = student.Photo;
+            return View(studentVM);
         }
 
         // POST: Students/Edit/5
@@ -78,15 +96,25 @@ namespace Session5_MVCScaffolding.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Name,EnrollmentDate,Photo")] Student student)
+        public ActionResult Edit([Bind(Include = "Id,Name,EnrollmentDate,Photo")] StudentViewModel studentVM)
         {
+            
             if (ModelState.IsValid)
             {
+                Student student = db.Students.Find(studentVM.Id);
+                // adding photo to the object
+                if (studentVM.Photo != null && studentVM !=null)
+                {
+                    student.Photo = ImageConverter.ByteArrayFromPostedFile(studentVM.Photo);
+                }
+
+                student.Name = studentVM.Name;
+                student.EnrollmentDate = studentVM.EnrollmentDate;
                 db.Entry(student).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            return View(student);
+            return View(studentVM);
         }
 
         // GET: Students/Delete/5
